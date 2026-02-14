@@ -200,7 +200,7 @@
         .input-u { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: white; outline: none; font-size: 1rem; }
         .input-u:focus { border-color: var(--primary); }
         .btn-u { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; margin-top: 15px; }
-        .qr-card { background: white; padding: 15px; border-radius: 20px; width: 220px; margin: 20px auto; }
+        .qr-card { background: white; padding: 15px; border-radius: 20px; width: 220px; margin: 20px auto; display: none; }
         .qr-card img { width: 100%; }
 
         /* --- SUCCESS POPUP ANIMATIONS --- */
@@ -228,6 +228,28 @@
             100% { transform: scale(1); }
         }
 
+        /* --- PAYMENT SELECTION GRID --- */
+        .payment-options {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0;
+        }
+        .pay-item {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            padding: 15px; border-radius: 20px; cursor: pointer; transition: 0.3s;
+        }
+        .pay-item:hover { border-color: var(--primary); background: rgba(67, 56, 202, 0.1); }
+        .pay-item span { font-size: 1.8rem; display: block; margin-bottom: 5px; }
+        .pay-item p { font-size: 0.7rem; font-weight: 800; margin: 0; color: white; }
+
+        /* --- TIP PROTOCOL --- */
+        .tip-container { margin: 20px 0; border-top: 1px solid var(--glass-border); padding-top: 20px; }
+        .tip-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .tip-chip { 
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
+            font-weight: 700; color: var(--text-main);
+        }
+        .tip-chip:hover, .tip-chip.selected { background: var(--accent); border-color: var(--accent); }
+
     </style>
 </head>
 <body>
@@ -235,7 +257,7 @@
     <div class="bg-fixed" id="decor"></div>
 
     <nav>
-        <div class="logo" onclick="location.reload()">24 <span>SERVICES</span></div>
+        <div class="logo" onclick="location.reload()">24x<span>SERVICES</span></div>
         <div class="nav-links">
             <div onclick="location.reload()">Dashboard</div>
             <div onclick="showHistory()">History</div>
@@ -300,39 +322,6 @@
                 <span class="price">From ₹1200</span>
             </div>
         </div>
-
-        <div class="section-label">✨ Lifestyle & Others</div>
-        <div class="super-grid">
-            <div class="service-card" onclick="startBooking('Salon', 499)">
-                <div style="font-size: 2.5rem;">✂️</div>
-                <h3>Home Salon</h3>
-                <span class="price">From ₹499</span>
-            </div>
-            <div class="service-card" onclick="startBooking('Gardening', 350)">
-                <div style="font-size: 2.5rem;">🌱</div>
-                <h3>Gardening</h3>
-                <span class="price">From ₹350</span>
-            </div>
-            <div class="service-card" onclick="startBooking('Car Wash', 250)">
-                <div style="font-size: 2.5rem;">🚗</div>
-                <h3>Car Wash</h3>
-                <span class="price">From ₹250</span>
-            </div>
-            <div class="service-card" onclick="startBooking('Laundry', 99)">
-                <div style="font-size: 2.5rem;">🧺</div>
-                <h3>Laundry</h3>
-                <span class="price">From ₹99</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="success-popup">
-        <div class="success-card">
-            <span class="check-icon">✅</span>
-            <h2 style="color: #000; margin-bottom: 10px;">Payment Successful</h2>
-            <p style="color: #666; margin-bottom: 25px;">Professional ID #9901 has been dispatched to your location.</p>
-            <button class="btn-u" style="margin: 0;" onclick="closePopup()">Track Arrival</button>
-        </div>
     </div>
 
     <div id="addr-overlay" class="overlay-surface">
@@ -368,12 +357,36 @@
 
     <div id="pay-overlay" class="overlay-surface">
         <div class="glass-box">
-            <h2 style="color: var(--success);">₹<span id="p-price"></span> SECURE PAY</h2>
-            <p>Scan the code to confirm the 15-minute slot.</p>
-            <div class="qr-card">
-                <img src="file:///Users/kunalsharma/Downloads/601cba82-2442-4940-a3e4-c7ed056131ab.jpeg" alt="QR">
+            <h2 style="color: var(--success);">₹<span id="p-price"></span> Checkout</h2>
+            
+            <div class="tip-container">
+                <p style="font-size: 0.85rem; color: var(--text-main);">Add a Tip for ⚡ Speed?</p>
+                <div class="tip-grid">
+                    <div class="tip-chip" onclick="selectTip(this, 20)">😊 ₹20</div>
+                    <div class="tip-chip" onclick="selectTip(this, 50)">🔥 ₹50</div>
+                    <div class="tip-chip" onclick="selectTip(this, 100)">👑 ₹100</div>
+                </div>
             </div>
-            <button class="btn-u" style="background: var(--success);" onclick="showTracker()">I Have Paid</button>
+
+            <div class="payment-options">
+                <div class="pay-item" onclick="toggleQR()">
+                    <span>📱</span>
+                    <p>UPI Pay</p>
+                </div>
+                <div class="pay-item" onclick="alert('Card Maintenance')">
+                    <span>💳</span>
+                    <p>Card</p>
+                </div>
+                <div class="pay-item" onclick="showTracker()">
+                    <span>💵</span>
+                    <p>Cash</p>
+                </div>
+            </div>
+
+            <div class="qr-card" id="qr-area">
+                <img src="file:///Users/kunalsharma/Downloads/601cba82-2442-4940-a3e4-c7ed056131ab.jpeg" alt="QR">
+                <button class="btn-u" style="background: var(--success);" onclick="showTracker()">I Have Paid</button>
+            </div>
         </div>
     </div>
 
@@ -390,13 +403,13 @@
     </div>
 
     <script>
-        let currentSvc = "", currentPrice = 0, currentBlock = "", mCount = 0;
+        let currentSvc = "", currentPrice = 0, currentBlock = "", mCount = 0, tipAmount = 0;
         let countdownTimer;
 
         // Decoration Drifting Emojis
-        const emojis = ['🛠️', '💧', '⚡', '🤖', '🧹', '🎨', '❄️'];
+        const emojis = ['🛠️', '💧', '⚡', '🤖', '🧹', '🎨', '❄️', '⭐', '✨'];
         const decor = document.getElementById('decor');
-        for(let i=0; i<12; i++){
+        for(let i=0; i<15; i++){
             const span = document.createElement('span');
             span.className = 'floating-emoji';
             span.innerText = emojis[Math.floor(Math.random()*emojis.length)];
@@ -404,6 +417,20 @@
             span.style.animationDelay = Math.random() * 10 + 's';
             span.style.fontSize = (Math.random() * 2 + 1) + 'rem';
             decor.appendChild(span);
+        }
+
+        function selectTip(el, amt) {
+            document.querySelectorAll('.tip-chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            tipAmount = amt;
+            speak(`Tip of ${amt} rupees added for lightning fast service!`);
+        }
+
+        function speak(txt) {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(txt);
+                window.speechSynthesis.speak(msg);
+            }
         }
 
         function startBooking(n, p) {
@@ -417,23 +444,26 @@
             hideAll();
             document.getElementById('svc-name').innerText = currentSvc;
             document.getElementById('chat-overlay').classList.add('active-surface');
-            addBubble("Namaste! I've located your residence at " + currentBlock + ". Our nearest " + currentSvc + " specialist is 2.4km away. Briefly describe the problem.", "ai");
+            
+            // INTELLECTUAL RADIUS DETECTION
+            const workersFound = Math.floor(Math.random() * 5) + 3;
+            addBubble(`Radius Scan: ${workersFound} Elite Professionals detected within 1.5km of ${currentBlock}. Describe your requirement.`, "ai");
         }
 
         function sendChat() {
             const inp = document.getElementById('userInput');
             if(!inp.value) return;
+            const text = inp.value.toLowerCase();
             addBubble(inp.value, 'user');
             mCount++;
             
             setTimeout(() => {
-                const logs = [
-                    "Analyzing... Hardware specialist is on standby.",
-                    "Logic lock confirmed. Arrival time set to 15 mins.",
-                    "Context received. Please finalize payment to dispatch the professional.",
-                    "Synchronizing with dispatch... Everything looks good."
-                ];
-                addBubble(logs[Math.floor(Math.random()*logs.length)], "ai");
+                if (text.includes("thank")) {
+                    addBubble("You're very welcome! We strive for excellence in every dispatch! 🌟", "ai");
+                    speak("You are very welcome!");
+                } else {
+                    addBubble("Protocol confirmed. Resource allocation pending payment.", "ai");
+                }
                 if(mCount >= 1) document.getElementById('pay-btn').style.display = 'block';
             }, 800);
             inp.value = "";
@@ -442,86 +472,45 @@
         function toPay() {
             hideAll();
             document.getElementById('p-price').innerText = currentPrice;
+            document.getElementById('qr-area').style.display = 'none';
             document.getElementById('pay-overlay').classList.add('active-surface');
         }
 
-        function startCountdown() {
-            let time = 15 * 60; // 15 minutes in seconds
-            const display = document.getElementById('timer-display');
-            
-            clearInterval(countdownTimer);
-            countdownTimer = setInterval(() => {
-                let minutes = Math.floor(time / 60);
-                let seconds = time % 60;
-                
-                seconds = seconds < 10 ? '0' + seconds : seconds;
-                display.innerText = `${minutes}m ${seconds}s`;
-                
-                if (time <= 0) {
-                    clearInterval(countdownTimer);
-                    display.innerText = "Arrived";
-                }
-                time--;
-            }, 1000);
+        function toggleQR() {
+            document.getElementById('qr-area').style.display = 'block';
         }
 
         function showTracker() {
             hideAll();
-            if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance("Payment successful. Your professional is being dispatched.");
-                window.speechSynthesis.speak(msg);
-            }
-            const popup = document.getElementById('success-popup');
-            popup.style.display = 'flex';
-            setTimeout(() => popup.classList.add('active'), 10);
-
-            const tracker = document.getElementById('tracker');
-            const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(currentBlock)}&t=h&z=17&output=embed`;
-            document.getElementById('map-frame').src = mapUrl;
-            
+            speak(`Transaction Successful! Your total of ${currentPrice + tipAmount} rupees is processed. Your professional is on the way!`);
+            document.getElementById('tracker').style.display = 'flex';
+            // SATELLITE HYBRID MAP MODE (t=h)
+            document.getElementById('map-frame').src = `https://maps.google.com/maps?q=${encodeURIComponent(currentBlock)}&t=h&z=19&output=embed`;
             startCountdown();
         }
 
-        function closePopup() {
-            const popup = document.getElementById('success-popup');
-            popup.classList.remove('active');
-            setTimeout(() => {
-                popup.style.display = 'none';
-                const tracker = document.getElementById('tracker');
-                tracker.style.display = 'flex';
-                setTimeout(() => {
-                    if (tracker.style.display === 'flex' && !tracker.classList.contains('tracker-min')) {
-                        toggleMap();
-                    }
-                }, 4000);
-            }, 500);
+        function startCountdown() {
+            let time = 900;
+            const display = document.getElementById('timer-display');
+            countdownTimer = setInterval(() => {
+                let m = Math.floor(time / 60), s = time % 60;
+                display.innerText = `${m}m ${s < 10 ? '0' + s : s}s`;
+                if (--time < 0) clearInterval(countdownTimer);
+            }, 1000);
         }
 
         function toggleMap(event) {
             if (event) event.stopPropagation();
             const t = document.getElementById('tracker');
-            const header = document.getElementById('map-header');
-            const body = document.getElementById('map-body');
-            const icon = document.getElementById('min-icon');
-            
             t.classList.toggle('tracker-min');
-            
-            if(t.classList.contains('tracker-min')) {
-                header.style.display = 'none';
-                body.style.display = 'none';
-                icon.style.display = 'flex';
-            } else {
-                header.style.display = 'flex';
-                body.style.display = 'flex';
-                icon.style.display = 'none';
-            }
+            document.getElementById('map-header').style.display = t.classList.contains('tracker-min') ? 'none' : 'flex';
+            document.getElementById('map-body').style.display = t.classList.contains('tracker-min') ? 'none' : 'flex';
+            document.getElementById('min-icon').style.display = t.classList.contains('tracker-min') ? 'flex' : 'none';
         }
 
         function handleTrackerClick(event) {
             const t = document.getElementById('tracker');
-            if (t.classList.contains('tracker-min')) {
-                toggleMap(event);
-            }
+            if (t.classList.contains('tracker-min')) toggleMap(event);
         }
 
         function addBubble(t, c) {
@@ -538,80 +527,12 @@
         }
 
         function showHistory() {
-            const content = document.getElementById('main-content');
-            content.innerHTML = `
-                <div class="hero">
-                    <h1 style="font-size: 3rem;">Service Ledger</h1>
-                    <p style="color: var(--text-muted);">A chronological record of your human capital deployments.</p>
-                </div>
-                <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">
-                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
-                        <thead>
-                            <tr style="color: var(--text-muted); text-align: left; font-size: 0.8rem;">
-                                <th style="padding: 10px;">TIMESTAMP</th>
-                                <th style="padding: 10px;">DOMAIN</th>
-                                <th style="padding: 10px;">COORDINATES</th>
-                                <th style="padding: 10px;">VALUATION</th>
-                                <th style="padding: 10px;">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${renderHistoryRow('2026-02-12', 'HVAC Optimization', 'Sector 4, Block B', '₹599', 'Authenticated')}
-                            ${renderHistoryRow('2026-02-05', 'Electrical Grid Repair', 'Green Oaks, Wing A', '₹320', 'Resolved')}
-                            ${renderHistoryRow('2026-01-28', 'Sanitary Engineering', 'Skyline, Block D', '₹245', 'Resolved')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        function renderHistoryRow(date, svc, loc, val, status) {
-            return `
-                <tr style="background: var(--card-bg); border: 1px solid var(--glass-border);">
-                    <td style="padding: 20px; border-radius: 15px 0 0 15px; font-size: 0.9rem;">${date}</td>
-                    <td style="padding: 20px; font-weight: 700;">${svc}</td>
-                    <td style="padding: 20px; color: var(--text-muted);">${loc}</td>
-                    <td style="padding: 20px;">${val}</td>
-                    <td style="padding: 20px; border-radius: 0 15px 15px 0; color: var(--success); font-weight: 800; font-size: 0.7rem;">${status.toUpperCase()}</td>
-                </tr>
-            `;
+            document.getElementById('main-content').innerHTML = `<div class="hero"><h1>Encrypted Ledger</h1><p>Record of secure transactions.</p></div>`;
         }
 
         function showSupport() {
-            const content = document.getElementById('main-content');
-            content.innerHTML = `
-                <div class="hero">
-                    <h1 style="font-size: 3rem;">Cognitive Support</h1>
-                    <p style="color: var(--text-muted);">Synthesizing solutions for operational anomalies.</p>
-                </div>
-                <div style="display: flex; justify-content: center; padding: 20px;">
-                    <div class="glass-box" style="text-align: left; width: 100%; max-width: 700px;">
-                        <h3 style="margin-bottom: 20px;">Direct Escalation Protocol</h3>
-                        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 30px;">
-                            Our neural network monitor suggests a mean response latency of 42 seconds. 
-                            Please articulate your requirement with high granularity to ensure optimal resource allocation.
-                        </p>
-                        <div style="margin-bottom: 20px;">
-                            <label style="font-size: 0.7rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px;">QUERY CATEGORIZATION</label>
-                            <select class="input-u" style="appearance: none; cursor: pointer;">
-                                <option>Technical Dispatch Latency</option>
-                                <option>Valuation & Billing Discrepancy</option>
-                                <option>Operational Integrity Issue</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <label style="font-size: 0.7rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px;">ANOMALY DESCRIPTION</label>
-                            <textarea class="input-u" style="height: 150px; resize: none;" placeholder="Provide systemic details..."></textarea>
-                        </div>
-                        <button class="btn-u" onclick="alert('Synthetic ticket generated. Monitoring starts now.')">INITIALIZE ESCALATION</button>
-                    </div>
-                </div>
-            `;
-            window.scrollTo(0,0);
+            document.getElementById('main-content').innerHTML = `<div class="hero"><h1>Neural Support</h1><p>24/7 AI-Human Liaison.</p></div>`;
         }
-
-        document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
     </script>
 </body>
 </html>
