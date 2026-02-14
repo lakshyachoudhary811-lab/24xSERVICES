@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24xSERVICES | AI Super-App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4338ca;
+            --accent: #f43f5e;
+            --bg-dark: #070a13;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+        }
+
+        /* --- ENABLE SCROLLING --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-y: auto; /* Enable Vertical Scrolling */
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- DECORATIVE SURFACE ELEMENTS --- */
+        .bg-fixed {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 0% 0%, #1e1b4b 0%, #070a13 50%);
+        }
+
+        .floating-emoji {
+            position: fixed;
+            font-size: 1.5rem;
+            opacity: 0.1;
+            pointer-events: none;
+            animation: drift 15s infinite linear;
+        }
+
+        @keyframes drift {
+            from { transform: translateY(100vh) rotate(0deg); }
+            to { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            background: rgba(7, 10, 19, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; }
+        .logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 30px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+        .nav-links div:hover { color: white; cursor: pointer; }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            padding: 100px 50px 50px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- DENSE SERVICE GRID (CROWDED INTERFACE) --- */
+        .section-label {
+            max-width: 1200px;
+            margin: 40px auto 20px;
+            padding: 0 50px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .super-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto 50px;
+            padding: 0 50px;
+        }
+
+        .service-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .service-card:hover {
+            background: rgba(67, 56, 202, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-10px);
+        }
+
+        .tag-special {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent);
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 900;
+        }
+
+        .price { color: var(--primary); font-weight: 800; font-size: 0.8rem; margin-top: 10px; display: block; }
+
+        /* --- SURFACES --- */
+        .overlay-surface {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 10, 19, 0.98);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .active-surface { visibility: visible; opacity: 1; }
+
+        .glass-box {
+            background: #111827;
+            padding: 50px;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        /* --- TRACKING WIDGET (CORNER MINIMIZED) --- */
+        #tracker {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 380px;
+            height: 520px;
+            background: #0f172a;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            cursor: default;
+        }
+
+        .tracker-min { width: 70px !important; height: 70px !important; border-radius: 50% !important; overflow: hidden; cursor: pointer !important; }
+
+        .map-header { padding: 15px; background: #1e293b; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        #map-frame { flex: 1; width: 100%; border: none; }
+        #min-icon { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+        /* --- CHAT INTERFACE --- */
+        .chat-container {
+            display: flex;
+            height: 70vh;
+            width: 90%;
+            max-width: 1000px;
+            background: #070a13;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+        }
+        .chat-sidebar { width: 280px; border-right: 1px solid var(--glass-border); padding: 30px; background: rgba(255,255,255,0.02); }
+        .chat-main { flex: 1; padding: 30px; display: flex; flex-direction: column; }
+        #chat-logs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
+        .bubble { padding: 15px 20px; border-radius: 20px; max-width: 80%; font-size: 0.9rem; line-height: 1.5; }
+        .ai { background: rgba(255,255,255,0.05); align-self: flex-start; border-bottom-left-radius: 5px; }
+        .user { background: var(--primary); align-self: flex-end; border-bottom-right-radius: 5px; }
+
+        /* --- UI ELEMENTS --- */
+        .input-u { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: white; outline: none; font-size: 1rem; }
+        .input-u:focus { border-color: var(--primary); }
+        .btn-u { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; margin-top: 15px; }
+        .qr-card { background: white; padding: 15px; border-radius: 20px; width: 220px; margin: 20px auto; }
+        .qr-card img { width: 100%; }
+
+        /* --- SUCCESS POPUP ANIMATIONS --- */
+        #success-popup {
+            position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0,0,0,0.9); display: none;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .success-card {
+            background: white; padding: 40px; border-radius: 35px;
+            text-align: center; width: 90%; max-width: 400px;
+            transform: scale(0.5); opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #success-popup.active .success-card { transform: scale(1); opacity: 1; }
+        .check-icon {
+            font-size: 5rem; color: var(--success);
+            margin-bottom: 20px; display: block;
+            animation: bounceIn 0.8s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-fixed" id="decor"></div>
+
+    <nav>
+        <div class="logo" onclick="location.reload()">24 <span>SERVICES</span></div>
+        <div class="nav-links">
+            <div onclick="location.reload()">Dashboard</div>
+            <div onclick="showHistory()">History</div>
+            <div onclick="showSupport()">Support</div>
+            <div style="color: var(--accent);">PRO Membership</div>
+        </div>
+        <div style="background: var(--primary); padding: 8px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">MY WALLET: ₹1,240</div>
+    </nav>
+
+    <div id="main-content">
+        <div class="hero">
+            <h1 style="font-size: 3.5rem; margin-bottom: 10px;">Instant AI Dispatch</h1>
+            <p style="color: var(--text-muted);">Human capital automation at your doorstep in <span style="color: var(--accent);">15 Minutes</span>.</p>
+        </div>
+
+        <div class="section-label">🔥 Emergency & Popular</div>
+        <div class="super-grid">
+            <div class="service-card" onclick="startBooking('Plumbing', 245)">
+                <span class="tag-special">FAST</span>
+                <div style="font-size: 2.5rem;">🔧</div>
+                <h3>Plumbing</h3>
+                <span class="price">From ₹245</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Electrical', 320)">
+                <div style="font-size: 2.5rem;">⚡</div>
+                <h3>Electrical</h3>
+                <span class="price">From ₹320</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Home Cleaning', 190)">
+                <div style="font-size: 2.5rem;">🧹</div>
+                <h3>Cleaning</h3>
+                <span class="price">From ₹190</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Carpentry', 450)">
+                <div style="font-size: 2.5rem;">🔨</div>
+                <h3>Carpentry</h3>
+                <span class="price">From ₹450</span>
+            </div>
+        </div>
+
+        <div class="section-label">🛡️ Specialized Services</div>
+        <div class="super-grid">
+            <div class="service-card" onclick="startBooking('AC Service', 599)">
+                <span class="tag-special" style="background: #3b82f6;">NEW</span>
+                <div style="font-size: 2.5rem;">❄️</div>
+                <h3>AC Repair</h3>
+                <span class="price">From ₹599</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Pest Control', 899)">
+                <div style="font-size: 2.5rem;">🐜</div>
+                <h3>Pest Control</h3>
+                <span class="price">From ₹899</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Appliance Fix', 299)">
+                <div style="font-size: 2.5rem;">📺</div>
+                <h3>TV & Fridge</h3>
+                <span class="price">From ₹299</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Painting', 1200)">
+                <div style="font-size: 2.5rem;">🎨</div>
+                <h3>Painting</h3>
+                <span class="price">From ₹1200</span>
+            </div>
+        </div>
+
+        <div class="section-label">✨ Lifestyle & Others</div>
+        <div class="super-grid">
+            <div class="service-card" onclick="startBooking('Salon', 499)">
+                <div style="font-size: 2.5rem;">✂️</div>
+                <h3>Home Salon</h3>
+                <span class="price">From ₹499</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Gardening', 350)">
+                <div style="font-size: 2.5rem;">🌱</div>
+                <h3>Gardening</h3>
+                <span class="price">From ₹350</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Car Wash', 250)">
+                <div style="font-size: 2.5rem;">🚗</div>
+                <h3>Car Wash</h3>
+                <span class="price">From ₹250</span>
+            </div>
+            <div class="service-card" onclick="startBooking('Laundry', 99)">
+                <div style="font-size: 2.5rem;">🧺</div>
+                <h3>Laundry</h3>
+                <span class="price">From ₹99</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-popup">
+        <div class="success-card">
+            <span class="check-icon">✅</span>
+            <h2 style="color: #000; margin-bottom: 10px;">Payment Successful</h2>
+            <p style="color: #666; margin-bottom: 25px;">Professional ID #9901 has been dispatched to your location.</p>
+            <button class="btn-u" style="margin: 0;" onclick="closePopup()">Track Arrival</button>
+        </div>
+    </div>
+
+    <div id="addr-overlay" class="overlay-surface">
+        <div class="glass-box">
+            <div style="font-size: 3rem; margin-bottom: 10px;">📍</div>
+            <h2>Confirm Location</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Provide your block/wing for a high-accuracy map lock.</p>
+            <input type="text" id="blockInput" class="input-u" placeholder="e.g. Block D, Marvel Towers">
+            <button class="btn-u" onclick="toChat()">Verify & Proceed</button>
+            <button style="background:transparent; color: var(--text-muted); border:none; margin-top:15px; cursor:pointer;" onclick="hideAll()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="chat-overlay" class="overlay-surface">
+        <div class="chat-container">
+            <div class="chat-sidebar">
+                <h3 id="svc-name">Service</h3>
+                <div style="margin-top:20px; padding:15px; border: 1px solid var(--glass-border); border-radius:15px; font-size:0.8rem;">
+                    <p style="color: var(--primary); font-weight:800;">AI OBSERVATION</p>
+                    <p id="ai-status">Analyzing requirements...</p>
+                </div>
+                <button class="btn-u" id="pay-btn" style="display:none; background: var(--accent);" onclick="toPay()">Secure & Dispatch</button>
+            </div>
+            <div class="chat-main">
+                <div id="chat-logs"></div>
+                <div style="display:flex; gap:10px; border-top: 1px solid var(--glass-border); padding-top:20px;">
+                    <input type="text" id="userInput" class="input-u" placeholder="Tell the AI what's wrong...">
+                    <button class="btn-u" style="width:120px; margin:0;" onclick="sendChat()">SEND</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pay-overlay" class="overlay-surface">
+        <div class="glass-box">
+            <h2 style="color: var(--success);">₹<span id="p-price"></span> SECURE PAY</h2>
+            <p>Scan the code to confirm the 15-minute slot.</p>
+            <div class="qr-card">
+                <img src="file:///Users/kunalsharma/Downloads/601cba82-2442-4940-a3e4-c7ed056131ab.jpeg" alt="QR">
+            </div>
+            <button class="btn-u" style="background: var(--success);" onclick="showTracker()">I Have Paid</button>
+        </div>
+    </div>
+
+    <div id="tracker" onclick="handleTrackerClick(event)">
+        <div class="map-header" id="map-header">
+            <span style="font-weight: 800;">🚨 LIVE DISPATCH</span>
+            <span id="close-map" style="cursor:pointer; padding: 5px 10px; background: rgba(255,255,255,0.1); border-radius: 5px;" onclick="toggleMap(event)">[ — ]</span>
+        </div>
+        <div id="map-body" style="display: flex; flex-direction: column; flex: 1;">
+            <div style="padding: 10px; font-size: 0.75rem; text-align:center; background: #070a13;">ETA: <span id="timer-display">15m 00s</span> | ID: #9901-X</div>
+            <iframe id="map-frame" src=""></iframe>
+        </div>
+        <div id="min-icon">🚨</div>
+    </div>
+
+    <script>
+        let currentSvc = "", currentPrice = 0, currentBlock = "", mCount = 0;
+        let countdownTimer;
+
+        // Decoration Drifting Emojis
+        const emojis = ['🛠️', '💧', '⚡', '🤖', '🧹', '🎨', '❄️'];
+        const decor = document.getElementById('decor');
+        for(let i=0; i<12; i++){
+            const span = document.createElement('span');
+            span.className = 'floating-emoji';
+            span.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+            span.style.left = Math.random() * 100 + 'vw';
+            span.style.animationDelay = Math.random() * 10 + 's';
+            span.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+            decor.appendChild(span);
+        }
+
+        function startBooking(n, p) {
+            currentSvc = n; currentPrice = p;
+            document.getElementById('addr-overlay').classList.add('active-surface');
+        }
+
+        function toChat() {
+            currentBlock = document.getElementById('blockInput').value;
+            if(!currentBlock) return;
+            hideAll();
+            document.getElementById('svc-name').innerText = currentSvc;
+            document.getElementById('chat-overlay').classList.add('active-surface');
+            addBubble("Namaste! I've located your residence at " + currentBlock + ". Our nearest " + currentSvc + " specialist is 2.4km away. Briefly describe the problem.", "ai");
+        }
+
+        function sendChat() {
+            const inp = document.getElementById('userInput');
+            if(!inp.value) return;
+            addBubble(inp.value, 'user');
+            mCount++;
+            
+            setTimeout(() => {
+                const logs = [
+                    "Analyzing... Hardware specialist is on standby.",
+                    "Logic lock confirmed. Arrival time set to 15 mins.",
+                    "Context received. Please finalize payment to dispatch the professional.",
+                    "Synchronizing with dispatch... Everything looks good."
+                ];
+                addBubble(logs[Math.floor(Math.random()*logs.length)], "ai");
+                if(mCount >= 1) document.getElementById('pay-btn').style.display = 'block';
+            }, 800);
+            inp.value = "";
+        }
+
+        function toPay() {
+            hideAll();
+            document.getElementById('p-price').innerText = currentPrice;
+            document.getElementById('pay-overlay').classList.add('active-surface');
+        }
+
+        function startCountdown() {
+            let time = 15 * 60; // 15 minutes in seconds
+            const display = document.getElementById('timer-display');
+            
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(() => {
+                let minutes = Math.floor(time / 60);
+                let seconds = time % 60;
+                
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                display.innerText = `${minutes}m ${seconds}s`;
+                
+                if (time <= 0) {
+                    clearInterval(countdownTimer);
+                    display.innerText = "Arrived";
+                }
+                time--;
+            }, 1000);
+        }
+
+        function showTracker() {
+            hideAll();
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance("Payment successful. Your professional is being dispatched.");
+                window.speechSynthesis.speak(msg);
+            }
+            const popup = document.getElementById('success-popup');
+            popup.style.display = 'flex';
+            setTimeout(() => popup.classList.add('active'), 10);
+
+            const tracker = document.getElementById('tracker');
+            const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(currentBlock)}&t=h&z=17&output=embed`;
+            document.getElementById('map-frame').src = mapUrl;
+            
+            startCountdown();
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('success-popup');
+            popup.classList.remove('active');
+            setTimeout(() => {
+                popup.style.display = 'none';
+                const tracker = document.getElementById('tracker');
+                tracker.style.display = 'flex';
+                setTimeout(() => {
+                    if (tracker.style.display === 'flex' && !tracker.classList.contains('tracker-min')) {
+                        toggleMap();
+                    }
+                }, 4000);
+            }, 500);
+        }
+
+        function toggleMap(event) {
+            if (event) event.stopPropagation();
+            const t = document.getElementById('tracker');
+            const header = document.getElementById('map-header');
+            const body = document.getElementById('map-body');
+            const icon = document.getElementById('min-icon');
+            
+            t.classList.toggle('tracker-min');
+            
+            if(t.classList.contains('tracker-min')) {
+                header.style.display = 'none';
+                body.style.display = 'none';
+                icon.style.display = 'flex';
+            } else {
+                header.style.display = 'flex';
+                body.style.display = 'flex';
+                icon.style.display = 'none';
+            }
+        }
+
+        function handleTrackerClick(event) {
+            const t = document.getElementById('tracker');
+            if (t.classList.contains('tracker-min')) {
+                toggleMap(event);
+            }
+        }
+
+        function addBubble(t, c) {
+            const l = document.getElementById('chat-logs');
+            const d = document.createElement('div');
+            d.className = `bubble ${c}`;
+            d.innerText = t;
+            l.appendChild(d);
+            l.scrollTop = l.scrollHeight;
+        }
+
+        function hideAll() {
+            document.querySelectorAll('.overlay-surface').forEach(o => o.classList.remove('active-surface'));
+        }
+
+        function showHistory() {
+            const content = document.getElementById('main-content');
+            content.innerHTML = `
+                <div class="hero">
+                    <h1 style="font-size: 3rem;">Service Ledger</h1>
+                    <p style="color: var(--text-muted);">A chronological record of your human capital deployments.</p>
+                </div>
+                <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
+                        <thead>
+                            <tr style="color: var(--text-muted); text-align: left; font-size: 0.8rem;">
+                                <th style="padding: 10px;">TIMESTAMP</th>
+                                <th style="padding: 10px;">DOMAIN</th>
+                                <th style="padding: 10px;">COORDINATES</th>
+                                <th style="padding: 10px;">VALUATION</th>
+                                <th style="padding: 10px;">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${renderHistoryRow('2026-02-12', 'HVAC Optimization', 'Sector 4, Block B', '₹599', 'Authenticated')}
+                            ${renderHistoryRow('2026-02-05', 'Electrical Grid Repair', 'Green Oaks, Wing A', '₹320', 'Resolved')}
+                            ${renderHistoryRow('2026-01-28', 'Sanitary Engineering', 'Skyline, Block D', '₹245', 'Resolved')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            window.scrollTo(0,0);
+        }
+
+        function renderHistoryRow(date, svc, loc, val, status) {
+            return `
+                <tr style="background: var(--card-bg); border: 1px solid var(--glass-border);">
+                    <td style="padding: 20px; border-radius: 15px 0 0 15px; font-size: 0.9rem;">${date}</td>
+                    <td style="padding: 20px; font-weight: 700;">${svc}</td>
+                    <td style="padding: 20px; color: var(--text-muted);">${loc}</td>
+                    <td style="padding: 20px;">${val}</td>
+                    <td style="padding: 20px; border-radius: 0 15px 15px 0; color: var(--success); font-weight: 800; font-size: 0.7rem;">${status.toUpperCase()}</td>
+                </tr>
+            `;
+        }
+
+        function showSupport() {
+            const content = document.getElementById('main-content');
+            content.innerHTML = `
+                <div class="hero">
+                    <h1 style="font-size: 3rem;">Cognitive Support</h1>
+                    <p style="color: var(--text-muted);">Synthesizing solutions for operational anomalies.</p>
+                </div>
+                <div style="display: flex; justify-content: center; padding: 20px;">
+                    <div class="glass-box" style="text-align: left; width: 100%; max-width: 700px;">
+                        <h3 style="margin-bottom: 20px;">Direct Escalation Protocol</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 30px;">
+                            Our neural network monitor suggests a mean response latency of 42 seconds. 
+                            Please articulate your requirement with high granularity to ensure optimal resource allocation.
+                        </p>
+                        <div style="margin-bottom: 20px;">
+                            <label style="font-size: 0.7rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px;">QUERY CATEGORIZATION</label>
+                            <select class="input-u" style="appearance: none; cursor: pointer;">
+                                <option>Technical Dispatch Latency</option>
+                                <option>Valuation & Billing Discrepancy</option>
+                                <option>Operational Integrity Issue</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="font-size: 0.7rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 10px;">ANOMALY DESCRIPTION</label>
+                            <textarea class="input-u" style="height: 150px; resize: none;" placeholder="Provide systemic details..."></textarea>
+                        </div>
+                        <button class="btn-u" onclick="alert('Synthetic ticket generated. Monitoring starts now.')">INITIALIZE ESCALATION</button>
+                    </div>
+                </div>
+            `;
+            window.scrollTo(0,0);
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
+    </script>
+</body>
+</html>
